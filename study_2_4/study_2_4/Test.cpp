@@ -1,10 +1,11 @@
 #include<iostream>
 #include<assert.h>
 #include<stdlib.h>
+#include<string.h>
 using namespace std;
 
 
-//
+
 //class Stack
 //{
 //public:
@@ -32,6 +33,7 @@ using namespace std;
 //			exit(-1);
 //		}
 //		_a = tmp;
+//		memcpy(_a, st._a, sizeof(int) * st._size);
 //		_size = st._size;
 //		_capacity = st._capacity;
 //	}
