@@ -32,41 +32,40 @@ int Date::GetMonthDay(int year, int month)
 	//	_day = d._day;
 	//}
 
-	bool Date::operator==(const Date& d)
+	bool Date::operator==(const Date& d)const
 	{
 		return _year == d._year
 			&& _month == d._month
 			&& _day == d._day;
 	}
 
-	bool Date::operator!=(const Date& d)
+	bool Date::operator!=(const Date& d)const
 	{
 		return !(*this == d);
 	}
 
-	bool Date::operator<(const Date& d)
+	bool Date::operator<(const Date& d)const
 	{
 		if (_year < d._year)
 			return true;
 		else if (_year == d._year && _month < d._month)
 			return true;
-		else if (_year == d._year && (_month = d._month) && _day < d._day)
+		else if (_year == d._year && (_month == d._month) && _day < d._day)
 			return true;
-		return false;
-
+     	return false;
 	}
 
-	bool Date::operator<=(const Date& d)
+	bool Date::operator<=(const Date& d)const
 	{
 		return *this < d || *this == d;
 	}
 
-	bool Date::operator>(const Date& d)
+	bool Date::operator>(const Date& d)const
 	{
 		return !(*this <= d);
 	}
 
-	bool Date::operator>=(const Date& d)
+	bool Date::operator>=(const Date& d)const
 	{
 		return !(*this < d);
 	}
@@ -84,7 +83,7 @@ int Date::GetMonthDay(int year, int month)
 
 
 
-	void Date::Print()
+	void Date::Print()const
 	{
 		cout << _year << "年" << _month << "月" << _day << "日" << endl;
 	}
@@ -93,12 +92,17 @@ int Date::GetMonthDay(int year, int month)
 // 但是，要支持 d1 = d2 += 100 ，要支持连续赋值
 Date& Date::operator+=(int day)
 {
+	if (day < 0)
+	{
+		*this -= -day;
+		return *this;
+	}
 	_day += day;
 	while (_day > GetMonthDay(_year, _month))
 	{
 		_day -= GetMonthDay(_year, _month);
 		_month++;
-		if (_month > 13)
+		if (_month == 13)
 		{
 			_month = 1;
 			_year++;
@@ -131,3 +135,73 @@ Date Date::operator++(int)
 	*this += 1;
 	return tmp;
 }
+
+Date& Date::operator-=(int day)
+{
+	if (day < 0)
+	{
+		*this += -day;
+		return *this;
+	}
+	_day -= day;
+	while (_day <= 0)
+	{
+		_month -= 1;
+		if (_month == 0)
+		{
+			_year -= 1;
+			_month = 12;
+		}
+		_day += GetMonthDay(_year, _month);
+	}
+	return *this;
+}
+
+Date Date::operator-(int day)
+{
+	Date tmp = *this;
+	tmp -= day;
+	return tmp;
+}
+
+int Date::operator-(const Date& d)const
+{
+	Date max = *this;
+	Date min = d;
+	int flag = 1;
+	if (max < min)
+	{
+		max = d;
+		min = *this;
+		flag = -1;
+	}
+
+	int ret = 0;
+	while (max != min)
+	{
+		++min;
+		++ret;
+	}
+	return ret*flag;
+
+}
+
+void Date::operator<<(ostream& out)
+{
+	cout << _year << "年" << _month << "月" << _day << "日" << endl;
+}
+
+
+// 全局 , 但是无法访问 Date 里面的 private 成员变量
+// 两个办法： 1. 设置成public ，不可取。   2. 友元类，可以。
+//ostream& operator<<(ostream& out, const Date& d)
+//{
+//	cout<< d._year << "年" << d._month << "月" << d._day << "日" << endl;
+//	return out;
+//}
+//
+//istream& operator>>(istream& in, Date& d)
+//{
+//	in >> d._year >> d._month >> d._day;
+//	return in;
+//}
