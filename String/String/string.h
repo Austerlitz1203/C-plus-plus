@@ -71,7 +71,7 @@ namespace simulate
 			return *this;
 		}
 
-		char* getstr()const
+		char* c_str()const
 		{
 			return _str;
 		}
@@ -118,7 +118,32 @@ namespace simulate
 			return !(*this > s);
 		}
 
-		void reserve(int n) // 扩容，不改变数据
+		void resize(size_t n,char ch='\0')
+		{
+			// 删除数据，保留前n个
+			if (n < _size)
+			{
+				_size = n;
+				_str[_size] = '\0';
+			}
+			else if (n > _size)  // 不用考虑 n = _size 的情况，因为这种情况不需要改变任何值
+			{
+				if (n > _capacity)
+				{
+					reserve(n);
+				}
+				size_t i = _size;
+				while (i < n)
+				{
+					_str[i] = ch;
+					i++;
+				}
+				_size = n;
+				_str[_size] = '\0';
+			}
+		}
+
+		void reserve(size_t n) // 扩容，不改变数据
 		{
 			char* tmp = new char[n + 1];
 			strcpy(tmp, _str);
@@ -162,24 +187,27 @@ namespace simulate
 			return *this;
 		}
 
-		void insert(int pos, const char ch)
+		string& insert(size_t pos, const char ch)
 		{
 			assert(pos <= _size);
 			if (_size + 1 > _capacity)
 			{
 				reserve(_capacity * 2);
 			}
-			size_t end = _size;
-			for (int i = end - 1; i >= pos; i--)
+			size_t end = _size + 1;
+			while (end > pos)
 			{
-				_str[i + 1] = _str[i];
+				_str[end] = _str[end - 1];
+				--end;
 			}
+
 			_str[pos] = ch;
 			_size++;
-			_str[_size] = '\0';
+
+			return *this;
 		}
 
-		void insert(int pos, const char* str)
+		string& insert(size_t pos, const char* str)
 		{
 			assert(pos <= _size);
 			int len = strlen(str);
@@ -187,31 +215,67 @@ namespace simulate
 			{
 				reserve(_size + len);
 			}
-			size_t end = _size;
-			for (int i = end - 1; i >= pos; i--) // 后移
+			size_t end = _size+len;
+			while (end > pos + len - 1)
 			{
-				_str[i + len] = _str[i];
+				_str[end] = _str[end - len];
+				--end;
 			}
-
-			const char* tmp = str;
-			for (int i = pos; i < pos+len; i++) // 插入
-			{
-				_str[i] = *str++;
-			}
+			strncpy(_str + pos, str, len);
 			_size += len;
-			_str[_size] = '\0';
 
+			return *this;
 		}
 
-		void erase(size_t pos, size_t len = npos)
+		string& erase(size_t pos, size_t len = npos)
 		{
-			assert(pos <= _size && npos > 0);
-			for (int i = pos; i + len < _size; i++)
+			assert(pos <= _size);
+			// 要删除的内容大于等于pos之后的长度
+			if (len == npos || pos + len >= _size) // 要判断 len == npos ，否则如果 pos+len 溢出就麻烦了
 			{
-				_str[i] = _str[i + len];
+				_str[pos] = '\0';
+				_size = pos;
 			}
-			_size -= len;
-			_str[_size] = '\0';
+			else  // 要删除的内容没有超过最后一个字符
+			{
+				strcpy(_str + pos, _str + pos + len);
+				_size -= len;
+			}
+			return *this;
+		}
+
+		void swap(string& s)
+		{
+			std::swap(_str, s._str);
+			std::swap(_size, s._size);
+			std::swap(_capacity, s._capacity);
+		}
+
+		size_t find(const char ch,size_t pos=0)
+		{
+			assert(pos <= _size);
+			for (int i = pos; i < _size; i++)
+			{
+				if (_str[ch] = i) return i;
+			}
+			return npos;
+		}
+
+		size_t find(const char* str, size_t pos = 0)
+		{
+			assert(pos < _size);
+			char* p = strstr(_str, str);
+			if (p == nullptr)
+			{
+				return npos;
+			}
+			return p - _str;
+		}
+
+		void clear()
+		{
+			_str[0] = '\0';
+			_size = 0;
 		}
 
 		~string()
@@ -227,12 +291,51 @@ namespace simulate
 		int _size;      // 目前的长度，不包括 \0
 		int _capacity;  // 最大容量，不包括最后一个 \0
 
-		static size_t npos; // 不可以用缺省值（初始化列表使用），因为static修饰，是全局变量
+		static const size_t npos; // 不可以用缺省值（初始化列表使用），因为static修饰，是全局变量
 
 		//static const size_t npos1 = -1;  // 但是这样子就可以（只对整形有效），所以用起来要注意。
 		//static const double npos2 = 1.9; // 不可以，因为不是整形
 	};
 
-	size_t string::npos = -1;
+	const size_t string::npos = -1;
+
+	istream& operator>>(istream& in, string& s)
+	{
+		s.clear(); // 要输入之前先清空
+
+		char ch = in.get();   // 不直接 in>>ch; 的原因是，cin以空格、换行作为区分，下面如果读到这两个之一，就会以为这是结束，不会放入缓冲区
+		char buff[128];       // 防止频繁扩容，缓冲区
+		int i = 0;
+		while (ch != ' ' && ch != '\n')
+		{
+			buff[i++] = ch;
+			if (i == 127)   // 满了，最后一个位置放 \0 ，然后将缓冲区的数据放到s里面
+			{
+				buff[127] = '\0';
+				s += buff;
+				i = 0;
+			}
+			ch = in.get(); // in 的 get 函数，可以拿到空格和换行，不会将其当作间隔处理 
+		}
+
+		if (i)  // 缓冲区还有数据没有存到s里面的情况
+		{
+			buff[i] = '\0';
+			s += buff;
+		}
+
+		return in;
+	}
+
+	ostream& operator<<(ostream& out, const string& s)
+	{
+	    // 自己写了迭代器，就可以使用范围 for 了，可以不用友元函数
+		for (auto ch : s)
+		{
+			out << ch;
+		}
+		return out;
+	}
+
 
 }
