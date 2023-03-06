@@ -1,6 +1,6 @@
 #include"vector.h"
 #include<algorithm>
-
+using namespace std;
 void Test1()
 {
 	simulate::vector<int> v1;
@@ -100,6 +100,26 @@ void Test4()
 	v1._push_back(7);
 	v1._push_back(6);
 
+
+	auto pos = find(v1.begin(), v1.end(), 1);
+	if (pos != v1.end())
+	{
+		v1.insert(pos, 100);
+	}
+
+	pos = find(v1.begin(), v1.end(), 10);
+	if (pos != v1.end())
+	{
+		v1.insert(pos, 333);
+	}
+
+	v1.insert(v1.end()-1, 67);
+
+	//v1.erase(find(v1.begin(), v1.end(), 1));
+	//v1.erase(find(v1.begin(), v1.end(), 333));
+	//v1.erase(find(v1.begin(), v1.end(), 6));
+
+
 	simulate::vector<int>::iterator it = v1.begin();
 	//while (it != v1.end())
 	//{
@@ -128,11 +148,29 @@ void Test4()
 	cout << endl;
 }
 
+
+void Test5()
+{
+	simulate::vector<simulate::vector<int>> ret = simulate::Solution().generate(5);
+	for (size_t i = 0; i < ret.size(); ++i)
+	{
+		for (size_t j = 0; j < ret[i].size(); ++j)
+		{
+			cout << ret[i][j] << " ";
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+
+
+
 int main()
 {
 	//Test1();
 	//Test2();
 	//Test3();
 	Test4();
+	//Test5();
 	return 0;
 }

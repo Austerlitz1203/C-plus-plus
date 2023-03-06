@@ -1,7 +1,7 @@
 #pragma once
 #include<iostream>
 #include<assert.h>
-using namespace std;
+
 
 
 namespace simulate
@@ -56,6 +56,7 @@ namespace simulate
 			}
 		}
 
+
 		// 写了模板，但是不加上上面的int参数重载，会报错，因为vector(10,5)会调用模板函数
 		template<class InputIterator>
 		vector(InputIterator begin, InputIterator end)
@@ -66,6 +67,20 @@ namespace simulate
 				_push_back(*begin);
 				++begin;
 			}
+		}
+
+
+		vector(const vector<T>& v)
+		{
+			_start = new T[v.capacity()];
+			
+			for (int i = 0; i < v.size(); i++)
+			{
+				_start[i] = v._start[i];
+			}
+
+			_finish = _start + v.size();
+			_end_of_storage = _start + v.capacity();
 		}
 
 		iterator begin()
@@ -87,12 +102,12 @@ namespace simulate
 			return _finish;
 		}
 
-		size_t size()
+		size_t size()const
 		{
 			return _finish - _start;
 		}
 
-		size_t capacity()
+		size_t capacity()const
 		{
 			return _end_of_storage - _start;
 		}
@@ -106,6 +121,21 @@ namespace simulate
 		{
 			assert(x < size());
 			return _start[x];
+		}
+
+		// 自己要写赋值重载，赋值重载和拷贝构造类似，一个 vector 复制给另一个 vector
+		vector<T> operator=(const vector<T>& val)
+		{
+			_start = new T[val.capacity()];
+			for (int i = 0; i < val.size(); i++)
+			{
+				_start[i] = val._start[i];
+			}
+
+			_finish = _start + val.size();
+			_end_of_storage = _start + val.capacity();
+
+			return *this;
 		}
 
 
@@ -191,7 +221,7 @@ namespace simulate
 				*(tmp + 1) = *tmp;
 				--tmp;
 			}
-			_start[pos] = x;
+			*pos = x;
 			_finish++;
 
 			return pos;
@@ -223,6 +253,34 @@ namespace simulate
 		T* _start=nullptr;
 		T* _finish=nullptr;
 		T* _end_of_storage=nullptr;
+	};
+
+
+
+	class Solution {
+	public:
+		vector<vector<int>> generate(int numRows) {
+			vector<vector<int>> vv;
+			vv.resize(numRows, vector<int>());
+			for (size_t i = 0; i < vv.size(); ++i)
+			{
+				vv[i].resize(i + 1, 0);
+				vv[i][0] = vv[i][vv[i].size() - 1] = 1;
+			}
+
+			for (size_t i = 0; i < vv.size(); ++i)
+			{
+				for (size_t j = 0; j < vv[i].size(); ++j)
+				{
+					if (vv[i][j] == 0)
+					{
+						vv[i][j] = vv[i - 1][j] + vv[i - 1][j - 1];
+					}
+				}
+			}
+
+			return vv;
+		}
 	};
 
 }
