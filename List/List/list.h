@@ -31,6 +31,9 @@ namespace simulate
 			:_node(x)
 		{}
 
+		// 这里不需要写拷贝构造，直接用编译器自动生成的浅拷贝即可
+
+
 		self& operator++()
 		{
 			_node = _node->_next;
@@ -143,12 +146,46 @@ namespace simulate
 		//typedef __list_const_iterator<T> const_iterator;
 		typedef __list_iterator<T, const T&,const T*> const_iterator;
 
-		// 初始化一个list，先有一个哨兵位节点（双向带头循环链表）
-		list()
+
+		void empty_init()
 		{
 			_head = new node;
 			_head->_next = _head;
 			_head->_prev = _head;
+		}
+
+		// 初始化一个list，先有一个哨兵位节点（双向带头循环链表）
+		list()
+		{
+			empty_init();
+		}
+
+		list(const list<T>& x)
+		{
+			empty_init();
+			list(x.begin(), x.end());
+		}
+
+		template<class InputIterator>
+		list(InputIterator start,InputIterator finish)
+		{
+			empty_init();
+			while (start._node != finish._node)
+			{
+				push_back(*start);
+				++start;
+			}
+		}
+
+
+		void swap(const list<T>& x)
+		{
+			std::swap(_head,x._head);
+		}
+
+		void operator=(const list<T> x)
+		{
+			swap(x);
 		}
 
 		void push_back(const T& x)
@@ -216,7 +253,7 @@ namespace simulate
 			cur->_prev = tmp;
 		}
 
-		void erase(iterator pos)
+		iterator erase(iterator pos)
 		{
 			assert(pos != end());
 			node* prev = pos._node->_prev;
@@ -225,6 +262,19 @@ namespace simulate
 
 			prev->_next = next;
 			next->_prev = prev;
+			return iterator(next);
+		}
+
+		~list<T>()
+		{
+			iterator it = begin();
+			while (it != end())
+			{
+				erase(it++);//后置++ 在这里体现作用了，返回it，但是实际上 it 已经++
+			}
+
+			delete _head;
+			_head = nullptr;
 		}
 
 	private:

@@ -85,9 +85,25 @@ void Test3()
 	simulate::print_list(lt);
 }
 
+void Test4()
+{
+	simulate::list<int> lt;
+	lt.push_back(10);
+	lt.push_back(20);
+	lt.push_back(30);
+	lt.push_back(40);
+	lt.push_back(50);
+	simulate::print_list(lt);
+	simulate::list<int> lt1 = lt;
+	lt1.push_back(200);
+	simulate::print_list(lt1);
+
+}
+
 int main()
 {
 	//Test1();
 	//Test2();
-	Test3();
+	//Test3();
+	Test4();
 }
