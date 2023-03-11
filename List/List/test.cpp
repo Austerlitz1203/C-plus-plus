@@ -98,6 +98,10 @@ void Test4()
 	lt1.push_back(200);
 	simulate::print_list(lt1);
 
+	simulate::list<int> lt2;
+	lt2 = lt;
+	simulate::print_list(lt2);
+
 }
 
 int main()

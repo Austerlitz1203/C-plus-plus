@@ -160,10 +160,16 @@ namespace simulate
 			empty_init();
 		}
 
+		void swap(list<T>& x)
+		{
+			std::swap(_head, x._head);
+		}
+
 		list(const list<T>& x)
 		{
 			empty_init();
-			list(x.begin(), x.end());
+			list<T> tmp(x.begin(), x.end()); // 这是构造函数
+			swap(tmp);
 		}
 
 		template<class InputIterator>
@@ -177,15 +183,10 @@ namespace simulate
 			}
 		}
 
-
-		void swap(const list<T>& x)
-		{
-			std::swap(_head,x._head);
-		}
-
-		void operator=(const list<T> x)
+		list<T> operator=( list<T> x)
 		{
 			swap(x);
+			return *this;
 		}
 
 		void push_back(const T& x)
