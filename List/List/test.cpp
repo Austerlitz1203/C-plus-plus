@@ -104,10 +104,29 @@ void Test4()
 
 }
 
+void Test5()
+{
+	simulate::list<int> lt;
+	lt.push_back(10);
+	lt.push_back(20);
+	lt.push_back(30);
+	lt.push_back(40);
+	lt.push_back(50);
+
+	simulate::list<int>::reverse_iterator rit = lt.rbegin();
+	while (rit != lt.rend())
+	{
+		cout << *rit << " ";
+		++rit;
+	}
+	cout << endl;
+}
+
 int main()
 {
 	//Test1();
 	//Test2();
 	//Test3();
-	Test4();
+	//Test4();
+	Test5();
 }

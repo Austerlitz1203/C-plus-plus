@@ -1,6 +1,7 @@
 #pragma once
 #include<iostream>
 #include<assert.h>
+#include"iterator.h"
 using namespace std;
 
 namespace simulate
@@ -146,6 +147,19 @@ namespace simulate
 		//typedef __list_const_iterator<T> const_iterator;
 		typedef __list_iterator<T, const T&,const T*> const_iterator;
 
+		typedef simulate_iterator::ReverseIterator<iterator, T&, T*> reverse_iterator;
+		typedef simulate_iterator::ReverseIterator<iterator, const T&, const T*> const_reverse_iterator;
+
+
+		reverse_iterator rbegin()
+		{
+			return reverse_iterator(end());
+		}
+
+		reverse_iterator rend()
+		{
+			return reverse_iterator(begin());
+		}
 
 		void empty_init()
 		{
