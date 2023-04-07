@@ -64,18 +64,39 @@ public:
 	}
 };
 
+//int main()
+//{
+//	A aa;
+//	aa.func1();
+//	aa.func2();
+//
+//	// 多态调用  -- 去虚表中找虚函数地址
+//	A* ptr = &aa;
+//	ptr->func1();
+//
+//	ptr = new B;
+//	ptr->func1();
+//
+//	return 0;
+//}
+
+#include"BSTree.h"
+
+void TestBSTree()
+{
+	BSTree<int> t;
+	int arr[] = { 3,5,7,4,1,12,8,9,0 };
+	for (int i = 0; i < 9; i++)
+	{
+		t.Insert(arr[i]);
+	}
+
+	t.Inorder();
+
+}
+
 int main()
 {
-	A aa;
-	aa.func1();
-	aa.func2();
-
-	// 多态调用  -- 去虚表中找虚函数地址
-	A* ptr = &aa;
-	ptr->func1();
-
-	ptr = new B;
-	ptr->func1();
-
+	TestBSTree();
 	return 0;
 }
