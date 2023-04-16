@@ -88,11 +88,18 @@ void TestBSTree()
 	int arr[] = { 3,5,7,4,1,12,8,9,0 };
 	for (int i = 0; i < 9; i++)
 	{
-		t.Insert(arr[i]);
+		t.InsertR(arr[i]);
 	}
 
 	t.Inorder();
+	cout << t.FIndR(1) << endl;
+	cout << t.FIndR(10) << endl;
+	cout<<t.EraseR(0);
+	cout<<t.EraseR(8);
+	cout<<t.EraseR(3);
 
+	cout << endl;
+	t.Inorder();
 }
 
 int main()
