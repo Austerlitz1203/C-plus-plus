@@ -1,23 +1,40 @@
 #pragma once
 #include"rb_tree.h"
 
-template<class K, class V>
-class set
+namespace SetSimulate
 {
-	struct KeyOfT
+	template<class K>
+	class set
 	{
-		const K& operator()(const pair<K, V>& kv)
+		struct KeyOfT
 		{
-			return kv.first;
+			const K& operator()(const K& k)
+			{
+				return k;
+			}
+		};
+
+	public:
+
+		typedef typename RBTree<K, K, KeyOfT>::const_iterator iterator;
+		typedef typename RBTree<K, K, KeyOfT>::const_iterator const_iterator;
+
+		iterator begin()
+		{
+			return _t.begin();
 		}
+
+		iterator end()
+		{
+			return _t.end();
+		}
+
+		pair<iterator,bool> insert(const K& k)
+		{
+			return _t.Insert(k);
+		}
+
+	private:
+		RBTree<K, K, KeyOfT> _t;
 	};
-
-public:
-	bool insert(const pair<K, V>& kv)
-	{
-		_t.Insert(kv);
-	}
-
-private:
-	RBTree<K, pair<const K, V>,KeyOfT> _t;
-};
+}

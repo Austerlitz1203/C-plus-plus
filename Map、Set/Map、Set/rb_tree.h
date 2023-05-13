@@ -11,16 +11,16 @@ using namespace std;
 		BLACK,
 	};
 
-	template<class V>
+	template<class T>
 	struct RBTreeNode
 	{
-		RBTreeNode<V>* _left;
-		RBTreeNode<V>* _right;
-		RBTreeNode<V>* _parent;
-		V _data;
+		RBTreeNode<T>* _left;
+		RBTreeNode<T>* _right;
+		RBTreeNode<T>* _parent;
+		T _data;
 		Colour _col;
 
-		RBTreeNode(const V& val)
+		RBTreeNode(const T& val)
 			: _left(nullptr)
 			, _right(nullptr)
 			, _parent(nullptr)
@@ -29,6 +29,152 @@ using namespace std;
 		{}
 	};
 
+	
+
+	template<class T,class Ref,class Ptr>
+	struct _RBTreeIterator
+	{
+		typedef RBTreeNode<T> Node;
+		typedef _RBTreeIterator<T, Ref, Ptr> self;
+
+
+		_RBTreeIterator(Node* node)
+			:_node(node)
+		{}
+
+
+		_RBTreeIterator(const _RBTreeIterator<T, T&, T*> &it)
+			:_node(it._node)
+		{}
+
+
+		Ref operator*()
+		{
+			return _node->_data;
+		}
+
+		bool operator!=(const self& s)
+		{
+			return this->_node != s._node;
+		}
+
+		Ptr operator->()
+		{
+			return &_node->_data;
+		}
+
+		self& operator++()
+		{
+			// 右子树存在，先去右子树的第一个
+			if (_node->_right)
+			{
+				Node* subleft=_node->_right;
+				while (subleft->_left)
+				{
+					subleft = subleft->_left;
+				}
+
+				_node = subleft;
+			}
+			else // 右子树不存在，向上找
+			{
+				Node* cur = _node;
+				Node* parent = _node->_parent;
+				while (parent && parent->_right == cur)
+				{
+					cur = cur->_parent;
+					parent = parent->_parent;
+				}
+				_node = parent;
+			}
+
+			return *this;
+		}
+
+		self& operator--()
+		{
+			if (_node->_left)
+			{
+				Node* subright = _node->_left;
+				while (subright->_right)
+				{
+					subright = subright->_right;
+				}
+				_node = subright;
+			}
+			else // 当前节点没有左子树，直接向上找，直到 parent 的左子节点是 cur
+			{
+				Node* cur = _node;
+				Node* parent = cur->_parent;
+				while (parent && parent->_left == cur)
+				{
+					cur = cur->_parent;
+					parent = parent->_parent;
+				}
+				_node = parent;
+			}
+
+			return *this;
+		}
+
+
+
+		Node* _node;
+	};
+
+
+	template<class T, class Ref, class Ptr>
+	struct _RBTreeReverseIterator
+	{
+		typedef RBTreeNode<T> Node;
+		typedef _RBTreeReverseIterator<T, Ref, Ptr> self;
+
+		_RBTreeReverseIterator(Node* node)
+		{
+			_it._node = node;
+		}
+
+		_RBTreeReverseIterator(const _RBTreeIterator<T, T&, T*>& it)
+		{
+			_it._node = it._node;
+		}
+
+		_RBTreeReverseIterator(const _RBTreeReverseIterator<T, T&, T*>& it)
+		{
+			_it._node = it._it._node;
+		}
+		
+		self& operator++()
+		{
+			--_it;
+			return *this;
+		}
+
+		self& operator--()
+		{
+			++_it;
+			return *this;
+		}
+
+		bool operator!=(const self& s)
+		{
+			return _it._node != s._it._node;
+		}
+
+		Ptr operator->()
+		{
+			return &_it._node->_data;
+		}
+
+		Ref operator*()
+		{
+			return _it._node->_data;
+		}
+
+		struct _RBTreeIterator<T,Ref,Ptr> _it=nullptr;
+	};
+
+
 
 	template<class K, class T, class KeyOfT>
 	class RBTree
@@ -36,6 +182,77 @@ using namespace std;
 		typedef struct RBTreeNode<T> Node;
 
 	public:
+		typedef _RBTreeIterator<T, T&, T*> iterator;
+		typedef _RBTreeIterator<T, const T&, const T*> const_iterator;
+		typedef _RBTreeReverseIterator<T, T&, T*> reverse_iterator;
+		typedef _RBTreeReverseIterator<T, const T&, const T*> const_reverse_iterator;
+	public:
+
+		iterator begin()
+		{
+			Node* cur = _root;
+			while (cur && cur->_left)
+			{
+				cur = cur->_left;
+			}
+
+			return iterator(cur);
+		}
+
+		iterator end()
+		{
+			return iterator(nullptr);
+		}
+
+		const_iterator begin() const
+		{
+			Node* cur = _root;
+			while (cur && cur->_left)
+			{
+				cur = cur->_left;
+			}
+
+			return const_iterator(cur);
+		}
+
+		const_iterator end() const
+		{
+			return const_iterator(nullptr);
+		}
+
+
+		reverse_iterator rbegin()
+		{
+			Node* cur = _root;
+			while (cur && cur->_right)
+			{
+				cur = cur->_right;
+			}
+
+			return reverse_iterator(cur);
+		}
+
+		reverse_iterator rend()
+		{
+			return reverse_iterator(nullptr);
+		}
+
+		const_reverse_iterator rbegin() const
+		{
+			Node* cur = _root;
+			while (cur && cur->_right)
+			{
+				cur = cur->_right;
+			}
+
+			return const_reverse_iterator(cur);
+		}
+
+		const_reverse_iterator rend() const
+		{
+			return const_reverse_iterator(nullptr);
+		}
+
 
 		~RBTree()
 		{
@@ -64,13 +281,13 @@ using namespace std;
 			return nullptr;
 		}
 
-		bool Insert(const T& val)
+		pair<iterator,bool> Insert(const T& val)
 		{
 			if (_root == nullptr)
 			{
 				_root = new Node(val);
 				_root->_col = BLACK;
-				return true;
+				return make_pair(iterator(_root),true);
 			}
 			KeyOfT kt;
 			Node* parent = nullptr;
@@ -88,7 +305,7 @@ using namespace std;
 					cur = cur->_right;
 				}
 				else
-					return false;
+					return make_pair(iterator(_root), false);
 			}
 
 			// 插入
@@ -179,7 +396,7 @@ using namespace std;
 			}
 
 			_root->_col = BLACK;
-			return true;
+			return make_pair(iterator(_root), true);
 		}
 
 		int Height()
