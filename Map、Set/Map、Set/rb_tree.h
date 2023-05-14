@@ -305,11 +305,12 @@ using namespace std;
 					cur = cur->_right;
 				}
 				else
-					return make_pair(iterator(_root), false);
+					return make_pair(iterator(cur), false);
 			}
 
 			// ²åÈë
 			cur = new Node(val);
+			Node* newnode = cur;
 			if (kt(parent->_data) < kt(val))
 			{
 				parent->_right = cur;
@@ -396,7 +397,7 @@ using namespace std;
 			}
 
 			_root->_col = BLACK;
-			return make_pair(iterator(_root), true);
+			return make_pair(iterator(newnode), true);
 		}
 
 		int Height()
