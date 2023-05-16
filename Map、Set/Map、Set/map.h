@@ -16,6 +16,7 @@ namespace MapSimulate
 		};
 
 	public:
+		typedef typename RBTreeNode<pair<const K, V>> Node;
 		typedef typename RBTree<K, pair<const K,V>, MapOfKey>::iterator iterator;
 		typedef typename RBTree<K, pair<const K,V>, MapOfKey>::const_iterator const_iterator;
 		typedef typename RBTree<K, pair<const K, V>, MapOfKey>::reverse_iterator reverse_iterator;
@@ -71,6 +72,12 @@ namespace MapSimulate
 		const_reverse_iterator rend()const
 		{
 			return _t.rend();
+		}
+
+		iterator Find(const K& key)
+		{
+			Node* cur = _t.find(key);
+			return iterator(cur);
 		}
 
 	private:
