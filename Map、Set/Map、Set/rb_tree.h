@@ -266,11 +266,11 @@ using namespace std;
 			Node* cur = _root;
 			while (cur)
 			{
-				if (kt(val) > kt(cur->_data))
+				if (val > kt(cur->_data))
 				{
 					cur = cur->_right;
 				}
-				else if (kt(val) < kt(cur->_data))
+				else if (val < kt(cur->_data))
 				{
 					cur = cur->_left;
 				}
