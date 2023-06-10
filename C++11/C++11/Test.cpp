@@ -258,35 +258,252 @@ void PerfectForward(T&& t)
 	Fun(forward<T>(t));
 }
 
+//int main()
+//{
+//	PerfectForward(10);           // 右值
+//
+//	int a;
+//	PerfectForward(a);            // 左值
+//	PerfectForward(std::move(a)); // 右值
+//
+//	const int b = 8;
+//	PerfectForward(b);		      // const 左值
+//	PerfectForward(std::move(b)); // const 右值
+//
+//	int&& rr1 = 10;
+//	cout << &rr1 << endl;
+//	rr1++;
+//
+//	/*string s1("hello world");
+//	string s2("hello world");
+//	string s3 = s1 + s2;*/
+//
+//
+//
+//	simulate::list<simulate::string> lt;
+//	
+//	simulate::string s1("hello world");
+//	lt.push_back(s1);
+//	
+//	lt.push_back(simulate::string("hello world"));
+//	lt.push_back("hello world");
+//
+//
+//	return 0;
+//}
+
+
+
+
+
+//class Person
+//{
+//public:
+//	Person(const char* name = "", int age = 0)
+//		:_name(name)
+//		, _age(age)
+//	{}
+//
+//	Person(const Person& p)
+//		:_name(p._name)
+//		,_age(p._age)
+//	{}
+//
+//	Person& operator=(const Person& p)
+//	{
+//		if(this != &p)
+//		{
+//			_name = p._name;
+//			_age = p._age;
+//		}
+//		return *this;
+//	}
+//
+//	// 强制生成移动构造和移动赋值
+//	Person(Person&& p) = default;
+//	Person& operator=(Person&& p) = default;
+//
+//	~Person()
+//	{
+//		cout << "~Person()" << endl;
+//	}
+//
+//private:
+//	simulate::string _name; // 自定义类型
+//	int _age = 1;		   // 内置类型
+//};
+//
+//int main()
+//{
+//	Person s1("张三", 18);
+//	Person s2 = s1;
+//	Person s3 = std::move(s1);  // 自定义类型，调用给自己的移动构造
+//	cout << endl << endl;
+//	Person s4;
+//	s4 = std::move(s2);  // 移动赋值，默认生成的调用自定义类型的移动赋值（由于 string 未实现，所以调用赋值重载）
+//
+//	return 0;
+//}
+
+
+
+
+
+
+class Person
+{
+public:
+	Person(const char* name, int age)
+		:_name(name)
+		, _age(age)
+	{}
+
+	// 一个构造函数可以复用其他构造函数
+	Person(const char* name)
+		:Person(name, 18) // 委托构造
+	{}
+
+private:
+	simulate::string _name; // 自定义类型
+	int _age = 1;		   // 内置类型
+};
+
+
+
+//template <class ...Args>
+//void ShowList(Args... args)
+//{
+//	cout << sizeof...(args) << endl;
+//
+//	// 如何解析出可变参数包呢？
+//	// 不能这么做，语法不支持
+//	//for (int i = 0; i < sizeof...(args); i++)
+//	//{
+//	//	cout << args[i] << " ";
+//	//}
+//	cout << endl;
+//}
+
+//int main()
+//{
+//	Person s1("张三");
+//
+//	ShowList();
+//	ShowList('x');
+//	ShowList('x', 'y');
+//	ShowList('x', 1);
+//
+//	return 0;
+//}
+
+
+
+
+
+
+//template <class T, class ...Args>
+//void ShowList(const T& val, Args... args)
+//{
+//	cout << __FUNCTION__ << "(" << sizeof...(args) <<")" << endl;
+//
+//	//cout << val << " ";
+//	ShowList(args...);
+//}
+//
+//int main()
+//{
+//	ShowList();
+//	ShowList(1);
+//	ShowList(1, 'A');
+//	ShowList(1, 'A', std::string("sort"));
+//	return 0;
+//}
+
+
+
+
+
+
+
+
+
+//template <class T>
+//int PrintArg(T t)
+//{
+//	cout << t << " ";
+//
+//	return 0;
+//}
+//
+//template <class ...Args>
+//void ShowList(Args... args)
+//{
+//	int arr[] = { PrintArg(args)... };
+//	cout << endl;
+//}
+//
+//// 编译器编译推演生成了一下代码
+////void ShowList(char a1, char a2, std::string a3)
+////{
+////	int arr[] = { PrintArg(a1),PrintArg(a2),PrintArg(a3) };
+////	cout << endl;
+////}
+//
+//int main()
+//{
+//	ShowList(1, 'A', std::string("sort"));
+//
+//	//ShowList(1, 2, 3);
+//	//ShowList(1);
+//
+//	return 0;
+//}
+
+
+
+
+#include "Date.h"
+
+// STL容器的插入接口都有一个emplace系列
 int main()
 {
-	PerfectForward(10);           // 右值
+	// 深拷贝的类
+	std::list<simulate::string> mylist;
+	// 没区别
+	/*bit::string s1("1111");
+	mylist.push_back(s1);
+	mylist.emplace_back(s1);
 
-	int a;
-	PerfectForward(a);            // 左值
-	PerfectForward(std::move(a)); // 右值
+	cout << endl;
+	bit::string s2("2222");
+	mylist.push_back(move(s1));
+	mylist.emplace_back(move(s2));*/
 
-	const int b = 8;
-	PerfectForward(b);		      // const 左值
-	PerfectForward(std::move(b)); // const 右值
+	// 开始有区别
+	//cout << endl;
+	//mylist.push_back("3333");   // 构造匿名对象 + 移动构造
+	//mylist.emplace_back("3333");// 直接构造
 
-	int&& rr1 = 10;
-	cout << &rr1 << endl;
-	rr1++;
+	// 浅拷贝的类
+	// 没区别
+	std::list<Date> list2;
+	Date d1(2023, 5, 28);
+	list2.push_back(d1);
+	list2.emplace_back(d1);
 
-	/*string s1("hello world");
-	string s2("hello world");
-	string s3 = s1 + s2;*/
+	cout << endl;
+	Date d2(2023, 5, 28);
+	list2.push_back(move(d1));
+	list2.emplace_back(move(d2));
 
+	// 有区别
+	cout << "=========================" << endl;
+	list2.push_back(Date(2023, 5, 28));
+	list2.push_back({ 2023, 5, 28 });
 
-
-	simulate::list<simulate::string> lt;
-	
-	simulate::string s1("hello world");
-	lt.push_back(s1);
-	
-	lt.push_back(simulate::string("hello world"));
-	lt.push_back("hello world");
+	cout << endl;
+	list2.emplace_back(Date(2023, 5, 28)); // 构造+移动构造
+	list2.emplace_back(2023, 5, 28);       // 直接构造
 
 
 	return 0;
