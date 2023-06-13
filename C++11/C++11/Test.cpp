@@ -7,7 +7,7 @@
 #include<assert.h>
 #include<algorithm>
 #include<thread>
-
+#include<mutex>
 using namespace std;
 
 
@@ -686,14 +686,14 @@ struct ComparePriceGreater
 
 
 
-void Func(int n, int num)
-{
-	for (int i = 0; i < n; i++)
-	{
-		cout <<num<<":" << i << endl;
-	}
-	cout << endl;
-}
+//void Func(int n, int num)
+//{
+//	for (int i = 0; i < n; i++)
+//	{
+//		cout <<num<<":" << i << endl;
+//	}
+//	cout << endl;
+//}
 
 //int main()
 //{
@@ -826,44 +826,414 @@ private:
 
 
 
+//int main()
+//{
+//	size_t m;
+//	cin >> m;
+//	vector<thread> vthds(m);
+//
+//	// 要求m个线程分别打印n次
+//	for (size_t i = 0; i < m; i++)
+//	{
+//		size_t n = 10;
+//		vthds[i] = thread([n, m]() {
+//			for (int j = 0; j < n; j++)
+//			{
+//				cout << this_thread::get_id() << ":" << j << endl;
+//
+//				this_thread::sleep_for(chrono::milliseconds(200));
+//			}
+//			cout << endl;
+//
+//			});
+//
+//		//cout << vthds[i].get_id() << endl;
+//	}
+//
+//	for (auto& t : vthds)
+//	{
+//		t.join();
+//	}
+//
+//	int i = 0;
+//	//i += 1;
+//
+//	// 原子
+//	/*int old = i;
+//	while (!__sync_bool_compare_and_swap(&i, old, old+1))
+//	{
+//		old = i;
+//	}*/
+//
+//	return 0;
+//}
+
+
+
+
+
+//
+//int x = 0;
+//mutex mtx;
+//
+//void Func(int n)
+//{
+//	//cout << &n << endl;
+//	//cout << &x << endl;
+//	// 并行
+//	for (int i = 0; i < n; i++)
+//	{
+//		mtx.lock();
+//		++x;
+//		mtx.unlock();
+//	}
+//
+//	// 快
+//	// 串行
+//	//mtx.lock();
+//	//for (int i = 0; i < n; i++)
+//	//{
+//	//	++x;
+//	//}
+//	//mtx.unlock();
+//}
+//
+//int main()
+//{
+//	int n = 100000;
+//	size_t begin = clock();
+//
+//	thread t1(Func, n);
+//	thread t2(Func, n);
+//
+//	t1.join();
+//	t2.join();
+//	size_t end = clock();
+//
+//	cout << x << endl;
+//	cout << end - begin << endl;
+//
+//	return 0;
+//}
+
+
+
+
+
+
+//list<int> lt;
+//int x = 0;
+//mutex mtx;
+//
+//void Func(int n)
+//{
+//	//cout << &n << endl;
+//	//cout << &x << endl;
+//	// 并行
+//	for (int i = 0; i < n; i++)
+//	{
+//		mtx.lock();
+//		++x;
+//		lt.push_back(x);
+//		lt.push_back(x);
+//		mtx.unlock();
+//
+//		cout << i << endl;
+//		cout << i << endl;
+//		cout << i << endl;
+//	}
+//
+//	// 快
+//	// 串行
+//	/*mtx.lock();
+//	for (int i = 0; i < n; i++)
+//	{
+//		++x;
+//		lt.push_back(x);
+//		lt.push_back(x);
+//
+//		cout << i << endl;
+//		cout << i << endl;
+//		cout << i << endl;
+//	}
+//	mtx.unlock();*/
+//}
+//
+//int main()
+//{
+//	int n = 1000;
+//	size_t begin = clock();
+//
+//	thread t1(Func, n);
+//	thread t2(Func, n);
+//
+//	t1.join();
+//	t2.join();
+//	size_t end = clock();
+//
+//	cout << x << endl;
+//	cout << end - begin << endl;
+//
+//	return 0;
+//}
+
+
+
+
+
+
+
+//int main()
+//{
+//	int n = 100000;
+//	int x = 0;
+//	mutex mtx;
+//	size_t begin = clock();
+//
+//	thread t1([&, n](){
+//			mtx.lock();
+//			for (int i = 0; i < n; i++)
+//			{
+//				++x;
+//			}
+//			mtx.unlock();
+//		});
+//
+//	thread t2([&, n]() {
+//			mtx.lock();
+//			for (int i = 0; i < n; i++)
+//			{
+//				++x;
+//			}
+//			mtx.unlock();
+//		});
+//
+//	t1.join();
+//	t2.join();
+//	size_t end = clock();
+//
+//	cout << x << endl;
+//	cout << end - begin << endl;
+//
+//	return 0;
+//}
+
+
+
+//
+//void Func(int x)
+//{
+//	cout << x << endl;
+//}
+//
+//int main()
+//{
+//	int n = 100000;
+//	atomic<int> x = 0;  // x 每一次的++、-- 都是原子的
+//	//atomic<int> x = {0};
+//	//atomic<int> x{0};
+//	//int x = 0;
+//
+//	mutex mtx;
+//	size_t begin = clock();
+//
+//	thread t1([&, n](){
+//			for (int i = 0; i < n; i++)
+//			{
+//				++x;
+//			}
+//		});
+//
+//	thread t2([&, n]() {
+//			for (int i = 0; i < n; i++)
+//			{
+//				++x;
+//			}
+//		});
+//
+//	t1.join();
+//	t2.join();
+//	size_t end = clock();
+//
+//	cout << x << endl;
+//	cout << end - begin << endl;
+//	
+//	//Func(x);
+//	//printf("%d\n", x.load());
+//
+//	return 0;
+//}
+
+
+
+
+
+
+
+
+// 支持两个线程交替打印，t1打印奇数，t2一个打印偶数
+//int main()
+//{
+//	mutex mtx;
+//	condition_variable cv;
+//
+//	int n = 100;
+//	int x = 2;
+//
+//	// 问题1：如何保证t1先运行，t2阻塞？
+//	// 问题2：如何防止一个线程不断运行？
+//	thread t1([&, n]() {
+//		while (1)
+//		{
+//			unique_lock<mutex> lock(mtx);
+//			if (x >= 100)
+//				break;
+//
+//			//if (x % 2 == 0) // 偶数就阻塞
+//			//{
+//			//	cv.wait(lock);
+//			//}
+//
+//			// 第二个参数为 false 的时候，阻塞
+//			cv.wait(lock, [&x]() {return x % 2 != 0; });
+//
+//			cout << this_thread::get_id() << ":" << x << endl;
+//			++x;
+//
+//			cv.notify_one();
+//		}
+//		});
+//
+//	thread t2([&, n]() {
+//		while (1)
+//		{
+//			unique_lock<mutex> lock(mtx);
+//			if (x > 100)
+//				break;
+//
+//			//if (x % 2 != 0) // 奇数就阻塞
+//			//{
+//			//	cv.wait(lock);
+//			//}
+//			cv.wait(lock, [&x](){return x % 2 == 0; });
+//
+//
+//			cout << this_thread::get_id() << ":" << x << endl;
+//			++x;
+//
+//			cv.notify_one();
+//		}
+//		});
+//
+//	t1.join();
+//	t2.join();
+//
+//	return 0;
+//}
+
+
+
+
+
+
+
+#include<map>
+#include<functional>
+
+
+int f(int a, int b)
+{
+	cout << "int f(int a, int b)" << endl;
+	return a + b;
+}
+
+struct Functor
+{
+public:
+	int operator() (int a, int b)
+	{
+		cout << "int operator() (int a, int b)" << endl;
+
+		return a + b;
+	}
+};
+
+class Plus
+{
+public:
+	Plus(int rate = 2)
+		:_rate(rate)
+	{}
+
+	static int plusi(int a, int b)
+	{
+		return a + b;
+	}
+
+	double plusd(double a, double b)
+	{
+		return (a + b) * _rate;
+	}
+
+private:
+	int _rate = 2;
+};
+
+
+
+//int main()
+//{
+//	//function<int(int, int)> f1 = &Plus::plusi;
+//	function<int(int, int)> f1 = Plus::plusi;
+//
+//	//function<double(Plus*, double, double)> f2 = &Plus::plusd;
+//
+//	//cout << f1(1, 2) << endl;
+//	////cout << f2(&Plus(), 20, 20) << endl;
+//
+//	//Plus pl(3);
+//	//cout << f2(&pl, 20, 20) << endl;
+//
+//	function<double(Plus, double, double)> f2 = &Plus::plusd;
+//
+//	cout << f1(1, 2) << endl;
+//	cout << f2(Plus(), 20, 20) << endl;
+//
+//	Plus pl(3);
+//	cout << f2(pl, 20, 20) << endl;
+//
+//	return 0;
+//}
+
+
+
+
 int main()
 {
-	size_t m;
-	cin >> m;
-	vector<thread> vthds(m);
+	//int(*pf1)(int,int) = f;
+	//map<string, >
 
-	// 要求m个线程分别打印n次
-	for (size_t i = 0; i < m; i++)
-	{
-		size_t n = 10;
-		vthds[i] = thread([n, m]() {
-			for (int j = 0; j < n; j++)
-			{
-				cout << this_thread::get_id() << ":" << j << endl;
+	function<int(int, int)> f1 = f;
+	function<int(int, int)> f2 = Functor();
+	function<int(int, int)> f3 = [](int a, int b) {
+		cout << "[](int a, int b) {return a + b;}" << endl;
+		return a + b;
+	};
 
-				this_thread::sleep_for(chrono::milliseconds(200));
-			}
-			cout << endl;
+	cout << f1(1, 2) << endl;
+	cout << f2(10, 20) << endl;
+	cout << f3(100, 200) << endl;
 
-			});
+	map<string, function<int(int, int)>> opFuncMap;
+	opFuncMap["函数指针"] = f;
+	opFuncMap["仿函数"] = Functor();
+	opFuncMap["lambda"] = [](int a, int b) {
+		cout << "[](int a, int b) {return a + b;}" << endl;
+		return a + b;
+	};
+	cout << opFuncMap["lambda"](1, 2) << endl;
 
-		//cout << vthds[i].get_id() << endl;
-	}
 
-	for (auto& t : vthds)
-	{
-		t.join();
-	}
-
-	int i = 0;
-	//i += 1;
-
-	// 原子
-	/*int old = i;
-	while (!__sync_bool_compare_and_swap(&i, old, old+1))
-	{
-		old = i;
-	}*/
 
 	return 0;
 }
