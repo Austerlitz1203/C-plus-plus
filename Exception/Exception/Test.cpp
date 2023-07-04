@@ -318,24 +318,83 @@ void Func()
 	delete[] array;
 }
 
+//int main()
+//{
+//	try
+//	{
+//		Func();
+//	}
+//	catch (const char* errmsg)
+//	{
+//		cout << errmsg << endl;
+//	}
+//	catch (const Exception& e) // 这里捕获父类对象就可以
+//	{
+//		// 多态
+//		cout << e.what() << endl;
+//	}
+//	catch (...)
+//	{
+//		cout << "Unkown Exception" << endl;
+//	}
+//
+//	return 0;
+//}
+
+
+
+int div1()
+{
+	int a, b;
+	cin >> a >> b;
+	if (b == 0)
+		throw invalid_argument("除0错误");
+
+	return a / b;
+}
+
+void Func1()
+{
+	// 1、如果p1这里new 抛异常会如何？
+	// 2、如果p2这里new 抛异常会如何？
+	// 3、如果div调用这里又会抛异常会如何？
+	int* p1 = new int;
+	int* p2 = nullptr;
+	try
+	{
+		p2 = new int;
+	}
+	catch (...)
+	{
+		delete p1;
+		throw;
+	}
+
+	try
+	{
+		cout << div1() << endl;
+	}
+	catch (...)
+	{
+		delete p1;
+		delete p2;
+
+		throw;
+	}
+
+	delete p1;
+	delete p2;
+}
+
 int main()
 {
 	try
 	{
-		Func();
+		Func1();
 	}
-	catch (const char* errmsg)
+	catch (exception& e)
 	{
-		cout << errmsg << endl;
-	}
-	catch (const Exception& e) // 这里捕获父类对象就可以
-	{
-		// 多态
 		cout << e.what() << endl;
-	}
-	catch (...)
-	{
-		cout << "Unkown Exception" << endl;
 	}
 
 	return 0;
