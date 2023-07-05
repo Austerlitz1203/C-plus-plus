@@ -1,8 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include<iostream>
 #include <mutex>
 #include <thread>
+#include<stdio.h>
+#include<functional>
 
 
 namespace smart_ptr_simulate
@@ -106,10 +110,18 @@ namespace smart_ptr_simulate
 	class shared_ptr
 	{
 	public:
-		shared_ptr(T* ptr)
+		shared_ptr(T* ptr = nullptr)
 			:_ptr(ptr)
 			, _pcount(new int(1))
 			, _pmtx(new mutex)
+		{}
+
+		template<class D>
+		shared_ptr(T* ptr ,D del)
+			:_ptr(ptr)
+			, _pcount(new int(1))
+			, _pmtx(new mutex)
+			,_del(del)
 		{}
 
 		~shared_ptr()
@@ -120,17 +132,27 @@ namespace smart_ptr_simulate
 		void Release()
 		{
 			_pmtx->lock();
-
+			bool deleteFlag = false;
 			if (--(*_pcount) == 0)
 			{
-				cout << "delete:" << _ptr << endl;
-				delete _ptr;
+				
+				if (_ptr)
+				{
+					_del(_ptr);
+				}
+
 				delete _pcount;
+				deleteFlag = true;
 
 				// delete _pmtx;  如何解决？
 			}
 
 			_pmtx->unlock();
+
+			if (deleteFlag)
+			{
+				delete _pmtx;
+			}
 		}
 
 		void AddCount()
@@ -179,7 +201,7 @@ namespace smart_ptr_simulate
 			return _ptr;
 		}
 
-		T* get()
+		T* get()const
 		{
 			return _ptr;
 		}
@@ -193,7 +215,49 @@ namespace smart_ptr_simulate
 		T* _ptr;
 		int* _pcount;
 		std::mutex* _pmtx;
+
+		function<void(T*)> _del = [](T* ptr) {
+			cout << "function defalut lambda delete" << endl;
+			delete ptr;
+		};
 	};
+
+
+
+	template<class T>
+	class weak_ptr
+	{
+	public:
+		weak_ptr()
+			:_ptr(nullptr)
+		{}
+
+		weak_ptr(const shared_ptr<T>& sp)
+			:_ptr(sp.get())
+		{}
+
+		T& operator*()
+		{
+			return *_ptr;
+		}
+
+		T* operator->()
+		{
+			return _ptr;
+		}
+
+		T* get()
+		{
+			return _ptr;
+		}
+
+	private:
+		T* _ptr;
+	};
+
+
+
+
 
 	void test_shared()
 	{
@@ -215,6 +279,9 @@ namespace smart_ptr_simulate
 		int _year = 0;
 		int _month = 0;
 		int _day = 0;
+
+		~Date()  // 加了析构，才会回退四个字节检测，然后才能发现错误
+		{} 
 	};
 
 	void SharePtrFunc(smart_ptr_simulate::shared_ptr<Date>& sp, size_t n, std::mutex& mtx)
@@ -225,6 +292,14 @@ namespace smart_ptr_simulate
 		{
 			// 这里智能指针拷贝会++计数，智能指针析构会--计数，这里是线程安全的。
 			smart_ptr_simulate::shared_ptr<Date> copy(sp);
+
+			mtx.lock();
+
+			sp->_day++;
+			sp->_month++;
+			sp->_year++;
+
+			mtx.unlock();
 		}
 	}
 
@@ -232,14 +307,124 @@ namespace smart_ptr_simulate
 	{
 		smart_ptr_simulate::shared_ptr<Date> p(new Date);
 		std::cout << p.get() << std::endl;
-		const size_t n = 10000;
+		const size_t n = 100000;
 		std::mutex mtx;
-		std::thread t1(SharePtrFunc, std::ref(p), n, ref(mtx));
-		std::thread t2(SharePtrFunc, std::ref(p), n, ref(mtx));
+		std::thread t1(SharePtrFunc, ref(p), n, ref(mtx));
+		std::thread t2(SharePtrFunc, ref(p), n, ref(mtx));
 
 		t1.join();
 		t2.join();
 
+		cout << p->_day << endl;
+		cout << p->_month << endl;
+		cout << p->_year << endl;
+
 		std::cout << p.use_count() << std::endl;
 	}
+
+
+
+	// 循环引用
+	struct ListNode
+	{
+		//shared_ptr<ListNode> _next;
+		//shared_ptr<ListNode> _prev;
+
+		// 换成 weak_ptr 解决问题
+		weak_ptr<ListNode> _next;
+		weak_ptr<ListNode> _prev;
+		
+		int _val;
+
+		~ListNode()
+		{
+			cout << "~ListNode()" << endl;
+		}
+	};
+
+
+	void test_shared_cycle()
+	{
+		shared_ptr<ListNode> sp1(new ListNode);
+		shared_ptr<ListNode> sp2(new ListNode);
+
+		cout << sp1.use_count() << endl;
+		cout << sp2.use_count() << endl;
+
+		sp1->_next = sp2;
+		sp2->_prev = sp1; // 注释掉这两行任意一个，就可以将 sp1、sp2 析构，这是循环引用导致的
+
+		cout << sp1.use_count() << endl;
+		cout << sp2.use_count() << endl;
+	}
+	// 解决办法： weak_ptr 
+	// 1、他不是常规的智能指针，不支持RAII
+	// 2、支持像指针一样
+	// 3、专门设计出来，辅助解决shared_ptr的循环引用问题
+	//    weak_ptr可以指向资源，但是他不参与管理，不增加引用计数
+
+
+
+	// 定制删除器
+	template<class T>
+	struct DeleteArray
+	{
+		void operator()(T* ptr)
+		{
+			cout << "void operator()(T* ptr)" << endl;
+			delete[] ptr;
+		}
+	};
+
+	void test_shared_deletor1()
+	{
+		std::shared_ptr<Date> sp1(new Date[10],DeleteArray<Date>());
+
+		std::shared_ptr<Date> sp2(new Date[10], [](Date * ptr) {
+			delete[] ptr;
+			cout << "lambda delete[]" << endl;
+			});
+
+		std::shared_ptr<FILE> sp3(fopen("Test.cpp", "r"), [](FILE* ptr) {
+			fclose(ptr);
+			cout << "FILE fclose" << endl;
+			});
+
+	}
+
+	void test_shared_deletor2()
+	{
+		shared_ptr<Date> sp1(new Date); // 面对这种情况，funciton 加一个默认的delete就行
+
+		//shared_ptr<Date> sp2(new Date[10]); // Date 加了析构才能发现错误
+		shared_ptr<Date> sp2(new Date[10], DeleteArray<Date>());
+
+		shared_ptr<Date> sp3(new Date[10], [](Date* ptr) {
+			delete[] ptr;
+			cout << "lambda delete[]" << endl;
+			});
+
+		shared_ptr<FILE> sp4(fopen("Test.cpp", "r"), [](FILE* ptr) {
+			fclose(ptr);
+			cout << "FILE fclose" << endl;
+			});
+
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

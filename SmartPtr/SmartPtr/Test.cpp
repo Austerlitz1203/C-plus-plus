@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include<iostream>
 using namespace std;
 
@@ -108,12 +110,16 @@ void test_unique()
 
 int main()
 {
-	//bit::test_auto();
-	//bit::test_shared();
-	smart_ptr_simulate::test_shared_safe();
+	//smart_ptr_simulate::test_auto();
+	//smart_ptr_simulate::test_shared();
+	//smart_ptr_simulate::test_shared_safe();
 
 	//test_auto();
 	//test_unique();
 
+
+	//smart_ptr_simulate::test_shared_cycle();
+	//smart_ptr_simulate::test_shared_deletor1();
+	smart_ptr_simulate::test_shared_deletor2();
 	return 0;
 }
